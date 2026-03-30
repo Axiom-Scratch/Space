@@ -7,6 +7,10 @@
 
 namespace {
 
+void glfw_error_callback(int error, const char* description) {
+    std::cerr << "GLFW Error " << error << ": " << description << '\n';
+}
+
 void framebuffer_size_callback(GLFWwindow*, int width, int height) {
     glViewport(0, 0, width, height);
 }
@@ -24,6 +28,8 @@ void print_gl_string(const char* label, GLenum name) {
 }  // namespace
 
 int main() {
+    glfwSetErrorCallback(glfw_error_callback);
+
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW.\n";
         return 1;
@@ -41,6 +47,7 @@ int main() {
     }
 
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
 
     if (gladLoadGL(glfwGetProcAddress) == 0) {
         std::cerr << "Failed to initialize GLAD.\n";
@@ -61,6 +68,10 @@ int main() {
     print_gl_string("Version", GL_VERSION);
 
     while (!glfwWindowShouldClose(window)) {
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window, true);
+        }
+
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
