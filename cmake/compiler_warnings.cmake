@@ -52,13 +52,16 @@ function(set_project_warnings TARGET)
             -Wunused
             -Wuninitialized
             -Wmisleading-indentation
-
-            -Wduplicated-cond
-            -Wduplicated-branches
-            -Wlogical-op
-
-            -Wuseless-cast
         )
+
+        if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+            target_compile_options(${TARGET} PRIVATE
+                -Wduplicated-cond
+                -Wduplicated-branches
+                -Wlogical-op
+                -Wuseless-cast
+            )
+        endif()
 
         if(AXIOM_WARNINGS_AS_ERRORS)
             target_compile_options(${TARGET} PRIVATE -Werror)

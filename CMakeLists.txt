@@ -49,22 +49,37 @@ include(cmake/compiler_warnings.cmake)
 
 # deps
 add_subdirectory(external/glfw)
+add_subdirectory(external/glm)
 
-add_subdirectory(external/glad/cmake)
-glad_add_library(glad_core REPRODUCIBLE API gl:core=4.6)
+add_library(glad STATIC external/glad/src/gl.c)
+target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/external/glad/include)
 
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
-add_subdirectory(external/assimp)
+if(CMAKE_DL_LIBS)
+    target_link_libraries(glad PRIVATE ${CMAKE_DL_LIBS})
+endif()
 
-add_subdirectory(external/spdlog)
+# Assimp is not vendored in this checkout yet.
+# set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+# set(ASSIMP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+# add_subdirectory(external/assimp)
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/external/spdlog/CMakeLists.txt")
+    add_subdirectory(external/spdlog)
+else()
+    message(STATUS "Skipping spdlog: external/spdlog not found")
+endif()
 
 if(AXIOM_ENABLE_TRACY)
-    add_subdirectory(external/tracy)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/external/tracy/CMakeLists.txt")
+        add_subdirectory(external/tracy)
+    else()
+        message(STATUS "Disabling Tracy: external/tracy not found")
+        set(AXIOM_ENABLE_TRACY OFF CACHE BOOL "Tracy profiler" FORCE)
+    endif()
 endif()
 
 # engine
-add_subdirectory(Engine)
+add_subdirectory(src)
 
 # config
 function(axiom_configure_target TARGET)
@@ -148,7 +163,7 @@ function(axiom_configure_target TARGET)
 
 endfunction()
 
-axiom_configure_target(Engine)
+axiom_configure_target(app)
 
 # compile_commands
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
